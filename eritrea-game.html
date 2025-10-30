@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eritrean Name Analyzer 🇪🇷</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* Tic Tac Toe Styles */
+        .game-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            text-align: center;
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-instruction {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .cell {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .cell:hover:not(.taken) {
+            background: #f0f0ff;
+            transform: scale(1.05);
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        .cell.winning {
+            background: #ffd93d;
+            animation: winPulse 0.5s infinite;
+        }
+
+        @keyframes winPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .game-status {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .status-playing {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-win {
+            background: #c8e6c9;
+            color: #388e3c;
+        }
+
+        .status-lose {
+            background: #ffcdd2;
+            color: #d32f2f;
+        }
+
+        .status-draw {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 15px auto 0;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        /* Locked state */
+        .locked {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .locked::after {
+            content: '🔒 ቀዳሚ ጸወታ ደሞቝካ ኣብዚ ምእታው ይከኣለካ';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .unlocked-message {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: bounce 1s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .sex-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sex-option {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .sex-option input[type="radio"] {
+            display: none;
+        }
+
+        .sex-option label {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: normal;
+        }
+
+        .sex-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .result-header h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .result-header .meaning {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .result-body {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-title {
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .height-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .height-person {
+            font-size: 80px;
+            line-height: 1;
+        }
+
+        .height-bar-container {
+            flex: 1;
+        }
+
+        .height-bar {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .height-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .forehead-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .forehead-emoji {
+            font-size: 100px;
+            line-height: 1;
+        }
+
+        .forehead-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .forehead-value {
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .patience-meter {
+            margin-top: 10px;
+        }
+
+        .patience-bar {
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .patience-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b 0%, #ffd93d 50%, #6bcf7f 100%);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .emoji {
+            font-size: 24px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇪🇷 ኣስማት ጠባያትን ባህርያት ኤርትራዊያን መርማሪ AI</h1>
+        <p class="subtitle">ትርጉም ስምካን ባህርያት ስብእናን ርኸብ!</p>
+        
+        <!-- Tic Tac Toe Game Section -->
+        <div class="game-section">
+            <div class="game-title">🎮 ጸወታ X-O</div>
+            <div class="game-instruction">ናብቲ ስም መርማሪ ንኽትኣቱ ቀዳሚ ነዚ ጸወታ ደምቅ!</div>
+            
+            <div class="game-board" id="gameBoard">
+                <div class="cell" data-index="0" onclick="makeMove(0)"></div>
+                <div class="cell" data-index="1" onclick="makeMove(1)"></div>
+                <div class="cell" data-index="2" onclick="makeMove(2)"></div>
+                <div class="cell" data-index="3" onclick="makeMove(3)"></div>
+                <div class="cell" data-index="4" onclick="makeMove(4)"></div>
+                <div class="cell" data-index="5" onclick="makeMove(5)"></div>
+                <div class="cell" data-index="6" onclick="makeMove(6)"></div>
+                <div class="cell" data-index="7" onclick="makeMove(7)"></div>
+                <div class="cell" data-index="8" onclick="makeMove(8)"></div>
+            </div>
+            
+            <div id="gameStatus" class="game-status status-playing">ተራኻ ኢዩ! (እንተኾ X)</div>
+            <button class="reset-btn" onclick="resetGame()">🔄 እንደገና ጅምር</button>
+        </div>
+
+        <!-- Name Analyzer Section (Initially Locked) -->
+        <div id="nameAnalyzer" class="locked">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="nameInput">ስምካ-ኪ</label>
+                    <input type="text" id="nameInput" placeholder="Enter your name..." />
+                </div>
+
+                <div class="form-group">
+                    <label>ጾታ</label>
+                    <div class="sex-options">
+                        <div class="sex-option">
+                            <input type="radio" id="male" name="sex" value="male" checked>
+                            <label for="male">👦🏾 ወዲ</label>
+                        </div>
+                        <div class="sex-option">
+                            <input type="radio" id="female" name="sex" value="female">
+                            <label for="female">👧🏾 ጋል</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="search-btn" onclick="analyzeName()">🔍 ስምካ-ኪ ድለይ</button>
+                
+                <div id="errorMsg"></div>
+            </div>
+
+            <div id="resultsSection" class="results-section"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tic Tac Toe Game Logic
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let isUnlocked = false;
+
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        function makeMove(index) {
+            if (board[index] !== '' || !gameActive || currentPlayer !== 'X') return;
+
+            // Player move
+            board[index] = 'X';
+            updateBoard();
+            
+            if (checkWin('X')) {
+                endGame('win');
+                return;
+            }
+            
+            if (checkDraw()) {
+                endGame('draw');
+                return;
+            }
+
+            // Computer move
+            currentPlayer = 'O';
+            updateStatus('ኮምፒተር ጸዊቱ ኣሎ...');
+            
+            setTimeout(() => {
+                makeComputerMove();
+                updateBoard();
+                
+                if (checkWin('O')) {
+                    endGame('lose');
+                    return;
+                }
+                
+                if (checkDraw()) {
+                    endGame('draw');
+                    return;
+                }
+                
+                currentPlayer = 'X';
+                updateStatus('ተራኻ ኢዩ! (እንተኾ X)');
+            }, 500);
+        }
+
+        function makeComputerMove() {
+            // Medium difficulty AI
+            // 1. Check if computer can win
+            let move = findWinningMove('O');
+            if (move !== -1) {
+                board[move] = 'O';
+                return;
+            }
+
+            // 2. Block player from winning
+            move = findWinningMove('X');
+            if (move !== -1) {
+                board[move] = 'O';
+                return;
+            }
+
+            // 3. Take center if available
+            if (board[4] === '') {
+                board[4] = 'O';
+                return;
+            }
+
+            // 4. Take a corner
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => board[i] === '');
+            if (availableCorners.length > 0) {
+                const randomCorner = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                board[randomCorner] = 'O';
+                return;
+            }
+
+            // 5. Take any available space
+            const availableSpaces = board.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+            if (availableSpaces.length > 0) {
+                const randomSpace = availableSpaces[Math.floor(Math.random() * availableSpaces.length)];
+                board[randomSpace] = 'O';
+            }
+        }
+
+        function findWinningMove(player) {
+            for (let condition of winningConditions) {
+                const [a, b, c] = condition;
+                if (board[a] === player && board[b] === player && board[c] === '') return c;
+                if (board[a] === player && board[c] === player && board[b] === '') return b;
+                if (board[b] === player && board[c] === player && board[a] === '') return a;
+            }
+            return -1;
+        }
+
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index];
+                if (board[index] !== '') {
+                    cell.classList.add('taken');
+                } else {
+                    cell.classList.remove('taken');
+                }
+            });
+        }
+
+        function checkWin(player) {
+            for (let condition of winningConditions) {
+                const [a, b, c] = condition;
+                if (board[a] === player && board[b] === player && board[c] === player) {
+                    highlightWinningCells([a, b, c]);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+
+        function highlightWinningCells(cells) {
+            const cellElements = document.querySelectorAll('.cell');
+            cells.forEach(index => {
+                cellElements[index].classList.add('winning');
+            });
+        }
+
+        function endGame(result) {
+            gameActive = false;
+            const statusDiv = document.getElementById('gameStatus');
+            
+            if (result === 'win') {
+                statusDiv.textContent = '🎉 ደሚቕካ! ሕጂ ናብቲ ስም መርማሪ ትኽእል ትኣቱ!';
+                statusDiv.className = 'game-status status-win';
+                unlockNameAnalyzer();
+            } else if (result === 'lose') {
+                statusDiv.textContent = '😔 ኮምፒተር ደሚቑ! እንደገና ፈትን!';
+                statusDiv.className = 'game-status status-lose';
+            } else {
+                statusDiv.textContent = '🤝 ዕሙጽ! እንደገና ፈትን!';
+                statusDiv.className = 'game-status status-draw';
+            }
+        }
+
+        function updateStatus(message) {
+            const statusDiv = document.getElementById('gameStatus');
+            statusDiv.textContent = message;
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            updateBoard();
+            updateStatus('ተራኻ ኢዩ! (እንተኾ X)');
+            document.getElementById('gameStatus').className = 'game-status status-playing';
+            
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('winning', 'taken');
+            });
+        }
+
+        function unlockNameAnalyzer() {
+            if (!isUnlocked) {
+                isUnlocked = true;
+                const nameAnalyzer = document.getElementById('nameAnalyzer');
+                nameAnalyzer.classList.remove('locked');
+                
+                // Add unlocked message
+                const unlockedMsg = document.createElement('div');
+                unlockedMsg.className = 'unlocked-message';
+                unlockedMsg.textContent = '🎉 እንቋዕ ደሓን መጻእካ! ሕጂ ስምካ ኣቱ!';
+                nameAnalyzer.insertBefore(unlockedMsg, nameAnalyzer.firstChild);
+                
+                // Scroll to name analyzer
+                setTimeout(() => {
+                    nameAnalyzer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 500);
+            }
+        }
+
+        // Name Analyzer Logic
+        const nameDatabase = {
+            'abiel': { english: 'God is my father', tigrinya: 'እግዚአብሔር አቦይ እዩ' },
+            'adonay': { english: 'My Lord', tigrinya: 'ጐይታይ' },
+            'bereket': { english: 'Blessing', tigrinya: 'በረኸት' },
+            'daniel': { english: 'God is my judge', tigrinya: 'እግዚአብሔር ፈራዳይ እዩ' },
+            'elsa': { english: 'God is salvation', tigrinya: 'እግዚአብሔር መድሓኒት እዩ' },
+            'haben': { english: 'Pride', tigrinya: 'ሓበን' },
+            'helen': { english: 'Light', tigrinya: 'ብርሃን' },
+            'kidane': { english: 'Covenant', tigrinya: 'ኪዳን' },
+            'meron': { english: 'Sanctuary', tigrinya: 'መቕደስ' },
+            'natsnet': { english: 'Freedom', tigrinya: 'ናጽነት' },
+            'rahel': { english: 'Innocence', tigrinya: 'ንጽህና' },
+            'samuel': { english: 'God has heard', tigrinya: 'እግዚአብሔር ሰሚዑ' },
+            'selam': { english: 'Peace', tigrinya: 'ሰላም' },
+            'senait': { english: 'Good fortune', tigrinya: 'ጽቡቕ ዕድል' },
+            'solomon': { english: 'Peace', tigrinya: 'ሰላም' },
+            'tewelde': { english: 'Born of', tigrinya: 'ተወሊዱ' },
+            'yonas': { english: 'Dove', tigrinya: 'ርግቢት' },
+            'yosief': { english: 'God will add', tigrinya: 'እግዚአብሔር ይውስኽ' },
+            'zewdi': { english: 'Crown', tigrinya: 'ዘውዲ' },
+            'ruth': { english: 'Friend, companion', tigrinya: 'መሓዛ' },
+            'semhar': { english: 'Beautiful horizon', tigrinya: 'ጽብቕቲ ድምር' },
+            'asmeret': { english: 'She has perfected', tigrinya: 'ኣዝያ' },
+            'feven': { english: 'Light', tigrinya: 'ብርሃን' },
+            'mehret': { english: 'Mercy', tigrinya: 'መሓረት' },
+            'mussie': { english: 'Moses', tigrinya: 'ሙሴ' }
+        };
+
+        const skills = ["መስተውዓልቲ", "ምክታዕ ዝፈትዉ","ሓላላት", "ለባማት","ግናይት", "ለያቡ", "ሓሰውቲ", "ንፉዓት", "ህኩያት", "ለፍለፍቲ", "ቁምነገር ዘይብሎም", "በላሕቲ", "ጣሃታት ኣብ ትመርቲ ንቁሓት", "ሕማም ርእሲ", "ምእዙዝት", "ፍትዋት", "ቀጠፍቲ"];
+
+        function analyzeName() {
+            if (!isUnlocked) {
+                alert('ቀዳሚ ነቲ ጸወታ ደምቝ!');
+                return;
+            }
+
+            const name = document.getElementById('nameInput').value.trim();
+            const sex = document.querySelector('input[name="sex"]:checked').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            errorMsg.innerHTML = '';
+
+            if (!name) {
+                errorMsg.innerHTML = '<div class="error">ስምካ ኣቱ!</div>';
+                return;
+            }
+
+            const lowerName = name.toLowerCase();
+            const firstLetter = name[0].toUpperCase();
+            
+            // Get name meaning
+            let meaning, tigrinya;
+            if (nameDatabase[lowerName]) {
+                meaning = nameDatabase[lowerName].english;
+                tigrinya = nameDatabase[lowerName].tigrinya;
+            } else {
+                meaning = 'Beautiful Eritrean name';
+                tigrinya = 'ጽቡቕ ስም';
+            }
+
+            // Calculate height based on first letter
+            let height;
+            if (firstLetter >= 'A' && firstLetter <= 'H') {
+                height = Math.floor(Math.random() * (186 - 175 + 1)) + 175;
+            } else {
+                height = Math.floor(Math.random() * (150 - 140 + 1)) + 140;
+            }
+
+            // Calculate forehead size
+            let foreheadSize;
+            if (firstLetter >= 'A' && firstLetter <= 'K') {
+                foreheadSize = 3 + Math.random() * 2;
+            } else if (firstLetter >= 'L' && firstLetter <= 'Q') {
+                foreheadSize = 8 + Math.random() * 2;
+            } else {
+                foreheadSize = 12 + Math.random() * 3;
+            }
+
+            // Calculate patience
+            let patience;
+            if (firstLetter >= 'A' && firstLetter <= 'K') {
+                patience = 3;
+            } else if (firstLetter >= 'L' && firstLetter <= 'Q') {
+                patience = 6;
+            } else {
+                patience = 10;
+            }
+
+            // Get random skills
+            const shuffled = [...skills].sort(() => 0.5 - Math.random());
+            const selectedSkills = shuffled.slice(0, 2 + Math.floor(Math.random() * 2));
+
+            // Display results
+            displayResults(name, sex, meaning, tigrinya, height, foreheadSize, patience, selectedSkills);
+        }
+
+        function displayResults(name, sex, meaning, tigrinya, height, foreheadSize, patience, selectedSkills) {
+            const sexEmoji = sex === 'male' ? '👦🏾' : '👧🏾';
+            const heightPercent = ((height - 140) / (186 - 140)) * 100;
+            const patiencePercent = (patience / 10) * 100;
+
+            const html = `
+                <div class="result-header">
+                    <h2>${sexEmoji} ${capitalizeFirst(name)}</h2>
+                    <div class="meaning">${meaning} | ${tigrinya}</div>
+                </div>
+                <div class="result-body">
+                    <div class="stat-box">
+                        <div class="stat-title">
+                            <span class="emoji">📏</span>
+                            <span>ቁመቶም ናይዚኦም ሰባት</span>
+                        </div>
+                        <div class="height-display">
+                            <div class="height-person">${sexEmoji}</div>
+                            <div class="height-bar-container">
+                                <div class="height-bar">
+                                    <div class="height-bar-fill" style="width: ${heightPercent}%">
+                                        ${height} cm
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-title">
+                            <span class="emoji">🧠</span>
+                            <span>ስፍሓት ግንባር</span>
+                        </div>
+                        <div class="forehead-display">
+                            <div class="forehead-emoji">🤔</div>
+                            <div class="forehead-info">
+                                <div class="forehead-value">${foreheadSize.toFixed(1)} cm</div>
+                                <div style="color: #666;">እዚ ዳኣ ${foreheadSize > 10 ? 'ናይ ኩዕሶ ሜዳ አንዶ ንበሎ' : foreheadSize > 6 ? 'ቱርኪ ገጽካ ተዛወር' : 'ቱርኪ ገጽካ ተዛወር'}! 😄</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-title">
+                            <span class="emoji">⏰</span>
+                            <span>ጠባይት ናይዞም ሰባት</span>
+                        </div>
+                        <div class="patience-meter">
+                            <div class="patience-bar">
+                                <div class="patience-bar-fill" style="width: ${patiencePercent}%">
+                                    ${patience}/10
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-title">
+                            <span class="emoji">✨</span>
+                            <span>ባህርያት ናይዞም ሰባት</span>
+                        </div>
+                        <div class="skills-container">
+                            ${selectedSkills.map(skill => `<div class="skill-badge">${skill}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = html;
+            resultsSection.classList.add('show');
+
+            // Scroll to results
+            setTimeout(() => {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        }
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeName();
+            }
+        });
+    </script>
+</body>
+</html>
